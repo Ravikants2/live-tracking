@@ -1,0 +1,51 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install Node for lambda packaging
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install lambda dependencies and zip
+        working-directory: lambda
+        run: |
+          npm install
+          cd ..
+          zip -r lambda.zip lambda
+
+      - name: Upload Lambda package to S3
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        run: |
+          aws s3 cp lambda.zip s3://$S3_BUCKET/lambda.zip
+
+      - name: Deploy CloudFormation stack
+        env:
+          STACK_NAME: ${{ secrets.STACK_NAME }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
+          TABLE_NAME: ${{ secrets.DDB_TABLE }}
+        run: |
+          aws cloudformation deploy \
+            --template-file template.yaml \
+            --stack-name "$STACK_NAME" \
+            --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
+            --parameter-overrides LambdaS3Bucket="$S3_BUCKET" LambdaS3Key="lambda.zip" TableName="$TABLE_NAME" StageName="prod"
+
+      - name: Cleanup zip
+        run: rm -f lambda.zip

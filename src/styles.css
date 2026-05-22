@@ -1,0 +1,28 @@
+:root{
+  --bg:#0f1724;
+  --card:#0f1724cc;
+  --accent:#6ee7b7;
+  --muted:#94a3b8;
+  --glass: rgba(255,255,255,0.04);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,#071028 0%, #081325 60%);color:#e6eef6;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:linear-gradient(90deg, rgba(10,16,30,0.6), rgba(7,18,36,0.2));backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.03)}
+.brand{font-weight:700;font-size:1.1rem;color:var(--accent)}
+.tabs{display:flex;gap:8px}
+.tab{background:transparent;border:0;color:var(--muted);padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600}
+.tab:hover{color:var(--accent);background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent)}
+.tab.active{color:#001f18;background:linear-gradient(90deg,var(--accent),#4ade80);box-shadow:0 6px 18px rgba(34,197,94,0.12)}
+main{padding:28px;max-width:1100px;margin:20px auto}
+.panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.panel:not(.active){display:none}
+.cards{display:flex;gap:16px;margin-top:14px}
+.card{flex:1;padding:18px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 6px 20px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.02)}
+.card-title{color:var(--muted);font-size:0.9rem}
+.card-value{font-size:1.8rem;font-weight:700;margin-top:6px;color:var(--accent)}
+.users-table{width:100%;border-collapse:collapse;margin-top:12px}
+.users-table th, .users-table td{padding:10px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.03);color: #d9e8f4}
+.btn{background:var(--accent);border:0;padding:8px 12px;border-radius:8px;color:#012114;cursor:pointer;font-weight:700}
+.btn.small{padding:6px 8px;font-size:0.9rem}
+.file-label input{display:block;margin-top:8px}
+@media(max-width:720px){.cards{flex-direction:column}.tabs{gap:6px;overflow:auto}.brand{font-size:1rem}}

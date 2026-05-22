@@ -1,0 +1,10 @@
+{
+  "name": "ion-lambda",
+  "version": "0.1.0",
+  "description": "Lambda for iON Live Streaming uploads to DynamoDB",
+  "main": "handler.js",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.500.0",
+    "@aws-sdk/util-dynamodb": "^3.500.0"
+  }
+}
