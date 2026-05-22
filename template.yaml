@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: iON Live Streaming Lambda API with DynamoDB storage
+
+Parameters:
+  LambdaS3Bucket:
+    Type: String
+    Description: S3 bucket containing the Lambda deployment package
+  LambdaS3Key:
+    Type: String
+    Description: S3 key for the Lambda zip package
+  TableName:
+    Type: String
+    Description: DynamoDB table name for TC data
+  StageName:
+    Type: String
+    Default: prod
+    Description: API Gateway stage name
+
+Resources:
+  IONTCDataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref TableName
+      AttributeDefinitions:
+        - AttributeName: TCCode
+          AttributeType: S
+      KeySchema:
+        - AttributeName: TCCode
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  IONLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: [lambda.amazonaws.com]
+            Action: ['sts:AssumeRole']
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBWritePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:GetItem
+                Resource: !GetAtt IONTCDataTable.Arn
+
+  IONUploadFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub "ion-upload-${StageName}"
+      Runtime: nodejs18.x
+      Handler: handler.handler
+      Role: !GetAtt IONLambdaRole.Arn
+      Code:
+        S3Bucket: !Ref LambdaS3Bucket
+        S3Key: !Ref LambdaS3Key
+      Environment:
+        Variables:
+          AWS_REGION: !Ref AWS::Region
+          DDB_TABLE: !Ref TableName
+
+  IONApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: iONUploadApi
+      EndpointConfiguration:
+        Types: [REGIONAL]
+
+  UploadResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !GetAtt IONApi.RootResourceId
+      PathPart: upload
+      RestApiId: !Ref IONApi
+
+  UploadMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref UploadResource
+      RestApiId: !Ref IONApi
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub |
+          arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${IONUploadFunction.Arn}/invocations
+
+  ApiGatewayDeploy:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: UploadMethod
+    Properties:
+      RestApiId: !Ref IONApi
+      StageName: !Ref StageName
+
+  LambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref IONUploadFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${IONApi}/*/POST/upload
+
+Outputs:
+  ApiUrl:
+    Description: API endpoint URL
+    Value: !Sub "https://${IONApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/upload"
+  LambdaFunctionName:
+    Description: Lambda function name
+    Value: !Ref IONUploadFunction
+  TableName:
+    Description: DynamoDB table name
+    Value: !Ref IONTCDataTable

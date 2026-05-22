@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live Tracking — Dashboard</title>
+  <link rel="stylesheet" href="src/styles.css">
+  </head>
+<body>
+  <header class="topbar">
+    <div class="brand">iON Live Streaming</div>
+    <nav class="tabs" role="tablist" aria-label="Main">
+      <button class="tab active" data-tab="dashboard" role="tab" aria-selected="true">Dashboard</button>
+      <button class="tab" data-tab="tc-status" role="tab">TC Status</button>
+      <button class="tab" data-tab="upload" role="tab">Upload</button>
+      <button class="tab" data-tab="users" role="tab">Managed Users</button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section id="dashboard" class="panel active" role="tabpanel">
+      <h1>Dashboard</h1>
+      <div class="cards">
+        <div class="card">
+          <div class="card-title">iON Live streaming</div>
+          <div class="card-value">3</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Active Venues</div>
+          <div class="card-value">2</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Alerts</div>
+          <div class="card-value">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="tc-status" class="panel" role="tabpanel" hidden>
+      <h1>TC Status</h1>
+      <p>Transport/control (TC) status view and timeline will appear here.</p>
+    </section>
+
+    <section id="upload" class="panel" role="tabpanel" hidden>
+      <h1>Upload</h1>
+      <div class="upload-actions">
+        <a class="btn" href="/templates/ion_template.csv" download>Download template (CSV)</a>
+      </div>
+      <form id="uploadForm">
+        <label class="file-label">Select CSV file (or Excel saved as CSV)
+          <input type="file" id="fileInput" accept=".csv,text/csv">
+        </label>
+        <button type="submit" class="btn">Validate & Preview</button>
+      </form>
+      <div id="uploadResult" style="margin-top:14px"></div>
+    </section>
+
+    <section id="users" class="panel" role="tabpanel" hidden>
+      <h1>Managed Users</h1>
+      <table class="users-table">
+        <thead><tr><th>Name</th><th>Role</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr><td>Jane Doe</td><td>Admin</td><td><button class="btn small">Edit</button></td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="src/app.js"></script>
+</body>
+</html>
